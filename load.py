@@ -6,7 +6,7 @@ import copy
 import argparse
 
 tablename = "northwind"
-dynamodb = boto3.resource('dynamodb', region_name="us-east-2")
+dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
 
 def setup():
     dynamodb.create_table(TableName=tablename,
@@ -71,7 +71,7 @@ def ddb_batch_write(items):
 def load_dynamo_data(data):
     while len(data) > 25:
         ddb_batch_write(data[:24])
-        data = data[24:]         
+        data = data[24:]
     if data:
         ddb_batch_write(data)
 
@@ -120,8 +120,8 @@ def build_node_list(node_rows, pk, sk, gs1_sk):
     for row in node_rows:
         node_row = copy.deepcopy(row)
         node_row["pk"] = node_row.pop(pk, pk)
-        node_row["sk"] = node_row.pop(sk, sk) 
-        node_row["data"] = build_composite_sort_key(node_row, gs1_sk) 
+        node_row["sk"] = node_row.pop(sk, sk)
+        node_row["data"] = build_composite_sort_key(node_row, gs1_sk)
         partition.append({'PutRequest': {'Item': node_row}})
     return partition
 
@@ -153,7 +153,7 @@ def handler():
     else:
         if args.setup:
             setup()
-        
+
         categories, customers, employees, orders, order_details, products, shippers, suppliers = load_csvs()
         table_data = build_adjacency_lists(categories, customers, employees, orders, order_details, products, shippers, suppliers)
         load_dynamo_data(table_data)
